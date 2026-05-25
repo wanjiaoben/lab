@@ -1,0 +1,1160 @@
+hello
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BJT 毎日打卡</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://bjt.nice.okinawa/mogi/trial/questions_part12.js"></script>
+<script src="https://bjt.nice.okinawa/mogi/trial/questions_part3.js"></script>
+<!-- 語彙 bank（新增 bank 时在此追加一行）-->
+<script src="https://bjt.nice.okinawa/audio/voca/bank01.js"></script>
+<script src="https://bjt.nice.okinawa/audio/voca/bank02.js"></script>
+<script src="https://bjt.nice.okinawa/audio/voca/bank03.js"></script>
+<script src="https://bjt.nice.okinawa/audio/voca/bank04.js"></script>
+<script src="https://bjt.nice.okinawa/audio/voca/bank05.js"></script>
+<script src="https://bjt.nice.okinawa/audio/voca/bank06.js"></script>
+<script src="https://bjt.nice.okinawa/audio/voca/bank07.js"></script>
+<script src="https://bjt.nice.okinawa/audio/voca/bank08.js"></script>
+<script src="https://bjt.nice.okinawa/audio/voca/bank09.js"></script>
+<script src="https://bjt.nice.okinawa/audio/voca/bank10.js"></script>
+<script src="https://bjt.nice.okinawa/audio/voca/bank11.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --g900:#0d2b1a;--g800:#1a4a2e;--g700:#1f5c38;
+  --g600:#2d7a4f;--g400:#4a9e6e;--g200:#a8d5bc;--g100:#d4eedf;--g50:#f0f9f4;
+  --bg:#fff;--bg2:#f7f7f7;--text:#1a1a1a;--text2:#666;--border:#e0e0e0;
+}
+body { background:var(--bg); color:var(--text); font-family:-apple-system,'Helvetica Neue',sans-serif; min-height:100vh; }
+
+/* ── Start Screen ── */
+.start-screen { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem 1rem; text-align:center; }
+.start-logo { width:64px; height:64px; background:var(--g800); border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 1.5rem; }
+.start-logo i { font-size:30px; color:#fff; }
+.start-name { font-size:22px; font-weight:500; color:var(--text); margin-bottom:6px; }
+.start-info { font-size:14px; color:var(--text2); margin-bottom:2rem; line-height:1.7; }
+.start-btn { padding:16px 48px; background:var(--g800); color:#fff; border:none; border-radius:14px; font-size:16px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:8px; transition:background .2s; }
+.start-btn:hover { background:var(--g700); }
+.start-btn:active { transform:scale(.97); }
+
+/* ── Header ── */
+.header { background:var(--g800); padding:1.25rem 1rem; display:none; }
+.header-inner { max-width:420px; margin:0 auto; }
+.header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.student-name { font-size:17px; font-weight:500; color:#fff; }
+.timer-row { display:flex; align-items:center; gap:8px; }
+.timer-badge { background:var(--g700); border-radius:8px; padding:4px 10px; font-size:14px; color:var(--g200); font-variant-numeric:tabular-nums; letter-spacing:.05em; }
+.pause-btn { background:var(--g600); border:none; border-radius:8px; padding:4px 10px; cursor:pointer; display:flex; align-items:center; gap:4px; font-size:12px; color:#fff; font-family:inherit; }
+.pause-btn:active { opacity:.8; }
+
+/* 浮动暂停按钮 */
+.float-pause { position:fixed; bottom:24px; right:16px; z-index:50; background:var(--g800); color:#fff; border:none; border-radius:50px; padding:12px 18px; font-size:14px; font-weight:500; font-family:inherit; cursor:pointer; display:none; align-items:center; gap:6px; box-shadow:0 4px 16px rgba(0,0,0,.2); transition:background .15s, transform .1s; }
+.float-pause:hover { background:var(--g700); }
+.float-pause:active { transform:scale(.95); }
+.progress-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px; }
+.stat { background:var(--g700); border-radius:8px; padding:8px; text-align:center; }
+.stat-num { font-size:20px; font-weight:500; color:#fff; line-height:1.1; }
+.stat-lbl { font-size:10px; color:var(--g200); margin-top:2px; }
+.prog-bar-bg { height:4px; background:var(--g700); border-radius:4px; overflow:hidden; }
+.prog-bar-fill { height:100%; background:var(--g200); border-radius:4px; transition:width .4s; }
+.prog-labels { display:flex; justify-content:space-between; margin-top:4px; font-size:11px; color:var(--g200); }
+
+/* ── Pause Overlay ── */
+.pause-overlay { position:fixed; inset:0; background:rgba(10,30,18,.92); display:none; align-items:center; justify-content:center; flex-direction:column; gap:16px; z-index:100; }
+.pause-overlay.show { display:flex; }
+.pause-big-time { font-size:52px; font-weight:300; color:#fff; letter-spacing:.05em; }
+.pause-lbl { font-size:14px; color:var(--g200); }
+.resume-btn { margin-top:8px; padding:14px 40px; background:var(--g600); color:#fff; border:none; border-radius:14px; font-size:16px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:8px; }
+
+/* ── Body ── */
+.body { max-width:420px; margin:0 auto; padding:1rem; display:none; }
+
+/* ── Task Card ── */
+.task-card { background:var(--bg); border:.5px solid var(--border); border-radius:14px; margin-bottom:10px; overflow:hidden; }
+.task-header { display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer; }
+.task-icon { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.task-info { flex:1; }
+.task-name { font-size:14px; font-weight:500; color:var(--text); }
+.task-meta { font-size:12px; color:var(--text2); margin-top:1px; }
+.task-check { width:24px; height:24px; border-radius:50%; border:1.5px solid var(--border); display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; }
+.task-check.done { background:var(--g600); border-color:var(--g600); }
+.task-check.done i { color:#fff; font-size:13px; }
+.task-body { border-top:.5px solid var(--border); padding:14px; display:none; }
+.task-body.open { display:block; }
+
+/* ── 語彙 patto 模式 ── */
+.vocab-counter { text-align:center; font-size:12px; color:var(--text2); margin-bottom:10px; }
+.vocab-dots { display:flex; flex-wrap:wrap; gap:3px; justify-content:center; margin-bottom:12px; }
+.vdot { width:8px; height:8px; border-radius:50%; background:var(--border); }
+.vdot.s0 { background:var(--g600); }
+.vdot.s1 { background:#f9a825; }
+.vdot.s2 { background:#e57373; }
+.vdot.cur { background:var(--g200); animation:pulse 1.2s ease-in-out infinite; }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+.patto-card { background:var(--bg2); border-radius:14px; padding:1.75rem 1.5rem; text-align:center; margin-bottom:10px; transition:transform .15s,opacity .15s; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.patto-card.out-l{transform:translateX(-45px);opacity:0;}
+.patto-card.out-r{transform:translateX(45px);opacity:0;}
+
+/* 播放状态 */
+.patto-play-ring { width:64px; height:64px; border-radius:50%; background:var(--g50); border:2px solid var(--g200); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; cursor:pointer; transition:all .15s; }
+.patto-play-ring.playing { background:var(--g100); border-color:var(--g400); animation:ringpulse 1s ease-in-out infinite; }
+@keyframes ringpulse{0%,100%{box-shadow:0 0 0 0 rgba(45,122,79,.3)}50%{box-shadow:0 0 0 8px rgba(45,122,79,0)}}
+.patto-play-ring i { font-size:26px; color:var(--g700); }
+.patto-wave { display:flex; align-items:center; justify-content:center; gap:3px; height:18px; margin-bottom:10px; }
+.pw { width:4px; border-radius:3px; background:var(--g400); }
+.playing-wave .pw { animation:wv .7s ease-in-out infinite; }
+.pw:nth-child(1){height:6px;animation-delay:0s}
+.pw:nth-child(2){height:12px;animation-delay:.1s}
+.pw:nth-child(3){height:18px;animation-delay:.2s}
+.pw:nth-child(4){height:12px;animation-delay:.15s}
+.pw:nth-child(5){height:8px;animation-delay:.05s}
+.pw:nth-child(6){height:14px;animation-delay:.25s}
+.pw:nth-child(7){height:6px;animation-delay:.1s}
+@keyframes wv{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.3)}}
+
+/* 答完后显示词 */
+.patto-flip-hint { font-size:12px; color:#bbb; margin-bottom:4px; }
+.patto-reveal { font-size:13px; color:var(--text2); min-height:40px; }
+.patto-reveal .jp { font-size:22px; font-weight:500; color:var(--text); margin-bottom:4px; }
+.patto-reveal .cn { font-size:14px; color:var(--g700); }
+
+.patto-btns { display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; }
+.pbtn { padding:12px 4px; border-radius:10px; border:.5px solid var(--border); background:transparent; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; gap:3px; font-size:11px; transition:all .1s; }
+.pbtn:active{transform:scale(.94);}
+.pbtn:disabled{opacity:.4;cursor:default;}
+.pbtn-0 .pi{color:var(--g700);font-size:16px;}
+.pbtn-0:hover:not(:disabled){background:var(--g50);border-color:var(--g400);}
+.pbtn-0 .pl{color:var(--g700);font-weight:500;}
+.pbtn-1 .pi{color:#f9a825;font-size:16px;}
+.pbtn-1:hover:not(:disabled){background:#fffde7;border-color:#f9a825;}
+.pbtn-1 .pl{color:#e65100;font-weight:500;}
+.pbtn-2 .pi{color:#e57373;font-size:16px;}
+.pbtn-2:hover:not(:disabled){background:#fff5f5;border-color:#e57373;}
+.pbtn-2 .pl{color:#c62828;font-weight:500;}
+
+/* ── 题目 ── */
+.q-item { margin-bottom:14px; }
+.q-item:last-child{margin-bottom:0;}
+.q-num { font-size:11px; color:var(--text2); margin-bottom:4px; }
+.q-text { font-size:14px; color:var(--text); line-height:1.6; margin-bottom:8px; }
+.q-audio { display:flex; align-items:center; gap:10px; background:var(--bg2); border-radius:10px; padding:10px 12px; margin-bottom:8px; }
+.qa-btn { width:36px; height:36px; border-radius:50%; background:var(--g700); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.qa-btn i{color:#fff;font-size:14px;}
+.qa-info{flex:1;}
+.qa-title{font-size:13px;font-weight:500;color:var(--text);}
+.qa-sub{font-size:11px;color:var(--text2);margin-top:1px;}
+.opts { display:flex; flex-direction:column; gap:5px; }
+.opt { padding:9px 12px; border-radius:10px; border:.5px solid var(--border); background:transparent; font-size:13px; cursor:pointer; text-align:left; font-family:inherit; color:var(--text); transition:all .1s; }
+.opt:hover:not(:disabled){border-color:var(--g400);background:var(--g50);}
+.opt.correct{background:var(--g50);border-color:var(--g600);color:var(--g800);}
+.opt.wrong{background:#fff5f5;border-color:#e57373;color:#b71c1c;}
+.opt:disabled{cursor:default;}
+.q-exp{font-size:12px;color:var(--g700);background:var(--g50);border-radius:6px;padding:6px 10px;margin-top:6px;border-left:2px solid var(--g400);line-height:1.5;display:none;}
+.q-exp.show{display:block;}
+
+/* ── 笔记 ── */
+.upload-area { border:1.5px dashed var(--border); border-radius:12px; padding:1.5rem; text-align:center; cursor:pointer; transition:all .2s; }
+.upload-area:hover{border-color:var(--g400);background:var(--g50);}
+.upload-area i{font-size:32px;color:var(--text2);margin-bottom:8px;display:block;}
+.upload-lbl{font-size:14px;color:var(--text2);}
+.upload-sub{font-size:12px;color:#bbb;margin-top:4px;}
+.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.preview-item{position:relative;aspect-ratio:1;border-radius:8px;overflow:hidden;}
+.preview-item img{width:100%;height:100%;object-fit:cover;}
+.preview-del{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.5);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.preview-del i{color:#fff;font-size:11px;}
+
+/* ── Admin Panel ── */
+.admin-screen { min-height:100vh; background:var(--bg2); padding:1.25rem 1rem; }
+.admin-inner { max-width:480px; margin:0 auto; }
+.admin-header { background:var(--g900); color:#fff; border-radius:14px; padding:1rem 1.25rem; margin-bottom:1rem; display:flex; align-items:center; gap:10px; }
+.admin-header i { font-size:22px; color:var(--g200); }
+.admin-title { font-size:16px; font-weight:500; }
+.admin-sub { font-size:12px; color:var(--g200); margin-top:2px; }
+.admin-card { background:#fff; border:.5px solid var(--border); border-radius:14px; padding:1rem 1.25rem; margin-bottom:10px; }
+.admin-card-title { font-size:13px; font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.05em; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.admin-card-title i { font-size:15px; color:var(--g600); }
+.admin-stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:10px; }
+.admin-stat { background:var(--g50); border:.5px solid var(--g200); border-radius:10px; padding:10px 8px; text-align:center; }
+.admin-stat-num { font-size:22px; font-weight:500; color:var(--g800); }
+.admin-stat-lbl { font-size:11px; color:var(--g600); margin-top:2px; }
+.score-input-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+.score-input-row input[type=date],
+.score-input-row input[type=number] { flex:1; padding:9px 12px; border-radius:10px; border:.5px solid var(--border); font-size:14px; font-family:inherit; color:var(--text); background:#fff; }
+.score-input-row input[type=number] { max-width:100px; }
+.score-save-btn { padding:9px 16px; background:var(--g800); color:#fff; border:none; border-radius:10px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit; white-space:nowrap; }
+.score-save-btn:hover { background:var(--g700); }
+.score-list { margin-top:8px; }
+.score-item { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:.5px solid var(--border); }
+.score-item:last-child { border-bottom:none; }
+.score-item-date { font-size:12px; color:var(--text2); }
+.score-item-val { font-size:18px; font-weight:500; color:var(--g800); }
+.score-del { background:none; border:none; cursor:pointer; color:#e57373; font-size:13px; padding:2px 6px; border-radius:6px; }
+.score-del:hover { background:#fff5f5; }
+.history-list { max-height:260px; overflow-y:auto; }
+.history-item { padding:8px 0; border-bottom:.5px solid var(--border); display:grid; grid-template-columns:1fr auto; gap:4px; }
+.history-item:last-child { border-bottom:none; }
+.history-date { font-size:12px; color:var(--text2); }
+.history-scores { font-size:12px; color:var(--text); }
+.history-dur { font-size:12px; color:var(--g600); font-variant-numeric:tabular-nums; }
+.admin-delete-section { margin-top:6px; }
+.admin-delete-btn { width:100%; padding:10px; border-radius:10px; background:#fff5f5; color:#c62828; border:.5px solid #ef9a9a; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit; display:flex; align-items:center; justify-content:center; gap:6px; transition:all .15s; }
+.admin-delete-btn:hover { background:#ffebee; border-color:#e57373; }
+
+.submit-area{margin-top:1rem;}
+.submit-btn{width:100%;padding:15px;border-radius:14px;background:var(--g800);color:#fff;font-size:16px;font-weight:500;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;}
+.submit-btn:hover:not(:disabled){background:var(--g700);}
+.submit-btn:disabled{opacity:.5;cursor:default;}
+
+/* ── 完成页 ── */
+.done-card{background:var(--g50);border:.5px solid var(--g200);border-radius:16px;padding:1.5rem;text-align:center;display:none;}
+.done-icon{width:56px;height:56px;background:var(--g600);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.done-icon i{color:#fff;font-size:26px;}
+.done-title{font-size:18px;font-weight:500;color:var(--g900);margin-bottom:4px;}
+.done-sub{font-size:13px;color:var(--g700);}
+.done-time{font-size:32px;font-weight:300;color:var(--g800);margin:12px 0 4px;letter-spacing:.05em;}
+.done-time-lbl{font-size:12px;color:var(--g600);}
+.done-scores{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:1rem;}
+.ds{background:#fff;border:.5px solid var(--g200);border-radius:8px;padding:8px 4px;text-align:center;}
+.ds-num{font-size:15px;font-weight:500;color:var(--g800);}
+.ds-lbl{font-size:10px;color:var(--g600);margin-top:2px;}
+</style>
+</head>
+<body>
+
+<!-- ── 开始画面 ── -->
+<div class="start-screen" id="start-screen">
+  <div class="start-logo"><i class="ti ti-plant-2"></i></div>
+  <div class="start-name" id="start-name">深耕自留地</div>
+  <div class="start-info" id="start-info">
+    今日のタスク<br>
+    語彙 50語 ／ 聴解 10問 ／ 重点語法 20問 ／ 読解 3問<br><br>
+    <span id="start-day-info"></span>
+  </div>
+  <button class="start-btn" onclick="startStudy()">
+    <i class="ti ti-player-play"></i>
+    学習をはじめる
+  </button>
+</div>
+
+<!-- ── 暂停遮罩 ── -->
+<div class="pause-overlay" id="pause-overlay">
+  <div class="pause-big-time" id="pause-big-time">00:00</div>
+  <div class="pause-lbl">一時停止中</div>
+  <button class="resume-btn" onclick="resumeStudy()">
+    <i class="ti ti-player-play"></i>
+    再開する
+  </button>
+</div>
+
+<!-- ── 浮动暂停按钮 ── -->
+<button class="float-pause" id="float-pause-btn" onclick="pauseStudy()">
+  <i class="ti ti-player-pause"></i> 一時停止
+</button>
+
+<!-- ── Header ── -->
+<div class="header" id="main-header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="student-name" id="hd-name"></div>
+      <div class="timer-row">
+        <div class="timer-badge" id="timer">00:00</div>
+        <button class="pause-btn" onclick="pauseStudy()">
+          <i class="ti ti-player-pause"></i> 一時停止
+        </button>
+      </div>
+    </div>
+    <div class="progress-row">
+      <div class="stat"><div class="stat-num" id="hd-day">第1次</div><div class="stat-lbl">学習回数</div></div>
+      <div class="stat"><div class="stat-num" id="hd-left">31</div><div class="stat-lbl">日まで</div></div>
+      <div class="stat"><div class="stat-num" id="hd-prog">0%</div><div class="stat-lbl">今日の進捗</div></div>
+    </div>
+    <div class="prog-bar-bg"><div class="prog-bar-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="prog-labels"><span>今日のタスク</span><span id="prog-txt">0 / 5 完了</span></div>
+  </div>
+</div>
+
+<!-- ── Body ── -->
+<div class="body" id="main-body">
+
+  <!-- 词汇 -->
+  <div class="task-card" id="card-vocab">
+    <div class="task-header" onclick="toggleTask('vocab')">
+      <div class="task-icon" style="background:#e8f4fd"><i class="ti ti-volume" style="color:#1565c0"></i></div>
+      <div class="task-info">
+        <div class="task-name"><span style="color:var(--g400);font-size:12px;margin-right:6px">A</span>語彙　100語</div>
+        <div class="task-meta" id="vocab-meta">听音频，直接选。不确定？点卡片看答案。每天不同50词。</div>
+      </div>
+      <div class="task-check" id="chk-vocab"><i class="ti ti-check"></i></div>
+    </div>
+    <div class="task-body open" id="body-vocab">
+      <div class="vocab-counter" id="vcnt">1 / 50</div>
+      <div class="vocab-dots" id="vdots"></div>
+      <!-- 喇叭：独立，不在卡片内 -->
+      <div style="text-align:center;margin-bottom:10px;">
+        <div class="patto-play-ring" id="vplay" onclick="playVocab()">
+          <i class="ti ti-volume" id="vplay-icon"></i>
+        </div>
+        <div class="patto-wave" id="vwave">
+          <div class="pw"></div><div class="pw"></div><div class="pw"></div>
+          <div class="pw"></div><div class="pw"></div><div class="pw"></div><div class="pw"></div>
+        </div>
+      </div>
+      <!-- 卡片：点击翻开看内容 -->
+      <div class="patto-card" id="vcard">
+        <div class="patto-flip-hint" id="vflip-hint">わからない？タップして確認</div>
+        <div class="patto-reveal" id="vreveal"></div>
+      </div>
+      <div class="patto-btns">
+        <button class="pbtn pbtn-0" id="pbtn0" onclick="answerVocab(0)" disabled>
+          <span class="pi"><i class="ti ti-bolt"></i></span><span class="pl">秒懂</span>
+        </button>
+        <button class="pbtn pbtn-1" id="pbtn1" onclick="answerVocab(1)" disabled>
+          <span class="pi"><i class="ti ti-droplet-half"></i></span><span class="pl">模糊</span>
+        </button>
+        <button class="pbtn pbtn-2" id="pbtn2" onclick="answerVocab(2)" disabled>
+          <span class="pi"><i class="ti ti-circle-dashed"></i></span><span class="pl">没印象</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 听力 -->
+  <div class="task-card" id="card-listen">
+    <div class="task-header" onclick="toggleTask('listen')">
+      <div class="task-icon" style="background:#fce4ec"><i class="ti ti-headphones" style="color:#ad1457"></i></div>
+      <div class="task-info">
+        <div class="task-name"><span style="color:#ad1457;font-size:12px;margin-right:6px">B</span>聴解　20問</div>
+        <div class="task-meta">会議・報告・交渉シーン</div>
+      </div>
+      <div class="task-check" id="chk-listen"><i class="ti ti-check"></i></div>
+    </div>
+    <div class="task-body" id="body-listen">
+      <div style="background:#fff8e1;border:.5px solid #ffe082;border-radius:10px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#e65100;line-height:1.6;">
+        <i class="ti ti-pencil" style="margin-right:4px"></i>
+        <strong>速记练习</strong>　拿出纸笔，听音频做速记，再回答问题。完成后拍照提交。
+      </div>
+      <div id="listen-qs"></div>
+    </div>
+  </div>
+
+  <!-- 语法 -->
+  <div class="task-card" id="card-grammar">
+    <div class="task-header" onclick="toggleTask('grammar')">
+      <div class="task-icon" style="background:#fff3e0"><i class="ti ti-pencil" style="color:#e65100"></i></div>
+      <div class="task-info">
+        <div class="task-name"><span style="color:#e65100;font-size:12px;margin-right:6px">C</span>重点語法　40問</div>
+        <div class="task-meta">敬語・授受 混合</div>
+      </div>
+      <div class="task-check" id="chk-grammar"><i class="ti ti-check"></i></div>
+    </div>
+    <div class="task-body" id="body-grammar">
+      <div id="grammar-qs"></div>
+    </div>
+  </div>
+
+  <!-- 阅读 -->
+  <div class="task-card" id="card-read">
+    <div class="task-header" onclick="toggleTask('read')">
+      <div class="task-icon" style="background:var(--g50)"><i class="ti ti-file-text" style="color:var(--g700)"></i></div>
+      <div class="task-info">
+        <div class="task-name"><span style="color:var(--g700);font-size:12px;margin-right:6px">D</span>読解　5問</div>
+        <div class="task-meta">メール・報告書</div>
+      </div>
+      <div class="task-check" id="chk-read"><i class="ti ti-check"></i></div>
+    </div>
+    <div class="task-body" id="body-read">
+      <div id="read-qs"></div>
+    </div>
+  </div>
+
+  <!-- 笔记 -->
+  <div class="task-card" id="card-note">
+    <div class="task-header" onclick="toggleTask('note')">
+      <div class="task-icon" style="background:#f3e5f5"><i class="ti ti-camera" style="color:#6a1b9a"></i></div>
+      <div class="task-info">
+        <div class="task-name"><span style="color:#6a1b9a;font-size:12px;margin-right:6px">E</span>今日のメモ写真</div>
+        <div class="task-meta">速記ノートを撮影して送信</div>
+      </div>
+      <div class="task-check" id="chk-note"><i class="ti ti-check"></i></div>
+    </div>
+    <div class="task-body" id="body-note">
+      <div style="background:var(--g50);border:.5px solid var(--g200);border-radius:12px;padding:1.25rem;text-align:center;">
+        <div style="font-size:32px;margin-bottom:10px">📸</div>
+        <div style="font-size:15px;font-weight:500;color:var(--g800);margin-bottom:8px">速记笔记拍照</div>
+        <div style="font-size:13px;color:var(--g700);line-height:1.7">请将今日速记笔记拍照<br>通过<strong>微信</strong>发送给老师</div>
+      </div>
+      <button style="width:100%;margin-top:12px;padding:12px;border-radius:12px;background:var(--g800);color:#fff;border:none;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;" onclick="markNotesDone()">
+        <i class="ti ti-check"></i> 已发送给老师
+      </button>
+    </div>
+  </div>
+
+  <!-- 提交 -->
+  <div class="submit-area">
+    <button class="submit-btn" id="submit-btn" onclick="submitAll()" disabled>
+      <i class="ti ti-send"></i>
+      <span id="submit-lbl">タスクを完了してから送信</span>
+    </button>
+  </div>
+
+  <!-- 完成页 -->
+  <div class="done-card" id="done-card">
+    <div class="done-icon"><i class="ti ti-check"></i></div>
+    <div class="done-title">今日の打卡完了！</div>
+    <div class="done-sub">記録されました！明日もがんばって！</div>
+    <div class="done-time" id="done-time">00:00</div>
+    <div class="done-time-lbl">今日の実際の学習時間</div>
+    <div class="done-scores">
+      <div class="ds"><div class="ds-num" id="ds-vocab">0/100</div><div class="ds-lbl">語彙</div></div>
+      <div class="ds"><div class="ds-num" id="ds-listen">0/20</div><div class="ds-lbl">聴解</div></div>
+      <div class="ds"><div class="ds-num" id="ds-grammar">0/40</div><div class="ds-lbl">語法</div></div>
+      <div class="ds"><div class="ds-num" id="ds-read">0/5</div><div class="ds-lbl">読解</div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── 教師管理パネル（?t=1 で表示）── -->
+<div id="admin-screen" style="display:none">
+  <div class="admin-screen">
+    <div class="admin-inner">
+      <div class="admin-header">
+        <i class="ti ti-shield-check"></i>
+        <div>
+          <div class="admin-title" id="admin-title">管理者モード</div>
+          <div class="admin-sub" id="admin-sub">読み込み中...</div>
+        </div>
+      </div>
+
+      <!-- 学習統計 -->
+      <div class="admin-card">
+        <div class="admin-card-title"><i class="ti ti-chart-bar"></i>学習統計</div>
+        <div class="admin-stat-row">
+          <div class="admin-stat"><div class="admin-stat-num" id="adm-sessions">—</div><div class="admin-stat-lbl">打卡回数</div></div>
+          <div class="admin-stat"><div class="admin-stat-num" id="adm-days-left">—</div><div class="admin-stat-lbl">試験まで</div></div>
+          <div class="admin-stat"><div class="admin-stat-num" id="adm-weak">—</div><div class="admin-stat-lbl">薄弱語数</div></div>
+        </div>
+      </div>
+
+      <!-- 試験成績入力 -->
+      <div class="admin-card">
+        <div class="admin-card-title"><i class="ti ti-trophy"></i>試験成績入力</div>
+        <div class="score-input-row">
+          <input type="date" id="score-date" placeholder="試験日">
+          <input type="number" id="score-val" placeholder="スコア" min="0" max="800">
+          <button class="score-save-btn" onclick="saveExamScore()">保存</button>
+        </div>
+        <div class="score-list" id="score-list"></div>
+      </div>
+
+      <!-- 打卡履歴 -->
+      <div class="admin-card">
+        <div class="admin-card-title"><i class="ti ti-calendar-stats"></i>打卡履歴</div>
+        <div class="history-list" id="history-list"></div>
+      </div>
+
+      <!-- アカウント削除 -->
+      <div class="admin-card">
+        <div class="admin-card-title"><i class="ti ti-trash"></i>アカウント管理</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:10px;line-height:1.6;">このアカウント（<strong id="adm-code-lbl"></strong>）のすべてのデータを削除します。この操作は取り消せません。</div>
+        <div class="admin-delete-section">
+          <button class="admin-delete-btn" onclick="deleteAccount()">
+            <i class="ti ti-trash"></i> アカウントを削除する
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ── 学生対照表 ────────────────────────────────────────
+// ── URL パラメータ ─────────────────────────────────────
+const urlParams = new URLSearchParams(location.search);
+const code = urlParams.get('c');
+
+// 学生信息先用默认值，等 API 返回后更新
+let STUDENT  = code || '深耕自留地';
+let START    = '20260519';
+let EXAM     = '20260619';
+let NO_READ  = false;
+let DAYS_LEFT = 0;
+
+function parseDate(s){ return new Date(s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8)); }
+
+function calcDaysLeft(){
+  const today    = new Date(); today.setHours(0,0,0,0);
+  const examDate = parseDate(EXAM);
+  return Math.max(0, Math.ceil((examDate-today)/(1000*60*60*24)));
+}
+
+// ── Cloudflare Worker API ─────────────────────────────
+const API_BASE = 'https://bjt-api.gerheidicn.workers.dev';
+
+async function fetchStoredData(){
+  try {
+    const res = await fetch(API_BASE + '/progress?c=' + encodeURIComponent(code));
+    if(res.status === 403){ document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:16px;color:#888;">このアカウントは無効です。</div>'; return {}; }
+    const data = await res.json();
+    // 如果 Worker 返回了 meta 字段，更新学生信息
+    if(data._meta){
+      STUDENT   = data._meta.name  || code;
+      EXAM      = data._meta.exam  || EXAM;
+      START     = data._meta.start || START;
+      NO_READ   = data._meta.noRead === true;
+      DAYS_LEFT = calcDaysLeft();
+      delete data._meta;
+    }
+    return data;
+  } catch(e){
+    try {
+      const raw = localStorage.getItem('bjt_session_' + code);
+      return raw ? JSON.parse(raw) : {count:1, weakWords:[], doneListen:[], doneGrammar:[], doneRead:[], correctCount:{}, history:[]};
+    } catch(e2){ return {count:1, weakWords:[], doneListen:[], doneGrammar:[], doneRead:[], correctCount:{}, history:[]}; }
+  }
+}
+
+async function saveStoredData(data){
+  try {
+    await fetch(API_BASE + '/progress?c=' + encodeURIComponent(code), {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+  } catch(e){
+    // 降级保存到 localStorage
+    try { localStorage.setItem('bjt_session_' + code, JSON.stringify(data)); } catch(e2){}
+  }
+}
+
+// storedData 初始为空，页面加载后异步填充
+let storedData = {count:1, weakWords:[], doneListen:[], doneGrammar:[], doneRead:[], correctCount:{}};
+let SESSION_NUM = 1;
+let DAY_NUM = 1;
+
+async function incrementSession(weakIds, doneListenNums, doneGrammarNums, doneReadNums, sessionDetail){
+  storedData.count = storedData.count + 1;
+  const existingWeak = new Set(storedData.weakWords || []);
+  (weakIds || []).forEach(id => existingWeak.add(id));
+  storedData.weakWords = [...existingWeak];
+  const existingListen = new Set(storedData.doneListen || []);
+  (doneListenNums || []).forEach(n => existingListen.add(n));
+  storedData.doneListen = [...existingListen];
+  const existingGrammar = new Set(storedData.doneGrammar || []);
+  (doneGrammarNums || []).forEach(n => existingGrammar.add(n));
+  storedData.doneGrammar = [...existingGrammar];
+  const existingRead = new Set(storedData.doneRead || []);
+  (doneReadNums || []).forEach(n => existingRead.add(n));
+  storedData.doneRead = [...existingRead];
+  // 追加本次详细记录
+  if(!storedData.history) storedData.history = [];
+  storedData.history.push(sessionDetail);
+  await saveStoredData(storedData);
+}
+
+// ── 开始画面初始化（异步加载数据）────────────────────────
+document.getElementById('start-name').textContent = STUDENT;
+document.getElementById('start-day-info').textContent = '読み込み中...';
+document.getElementById('hd-name').textContent = STUDENT;
+document.getElementById('hd-left').textContent = DAYS_LEFT;
+
+fetchStoredData().then(data => {
+  storedData  = data;
+  SESSION_NUM = data.count || 1;
+  DAY_NUM     = SESSION_NUM;
+  DAYS_LEFT   = calcDaysLeft();
+  // 更新 UI（fetchStoredData 里已更新 STUDENT）
+  document.getElementById('start-name').textContent = STUDENT;
+  document.getElementById('hd-name').textContent    = STUDENT;
+  document.getElementById('hd-left').textContent    = DAYS_LEFT;
+  document.getElementById('start-day-info').textContent =
+    '第'+SESSION_NUM+'次 ／ 試験まで '+DAYS_LEFT+' 日';
+  document.getElementById('hd-day').textContent = '第'+SESSION_NUM+'次';
+});
+
+// ── タイマー ──────────────────────────────────────────
+let noteFiles = [];
+let elapsed = 0;       // 実際の学習秒数
+let timerInterval = null;
+let isPaused = false;
+
+function formatTime(s){
+  return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+}
+function startTimer(){
+  timerInterval = setInterval(()=>{
+    elapsed++;
+    const t = formatTime(elapsed);
+    document.getElementById('timer').textContent = t;
+    if(isPaused) document.getElementById('pause-big-time').textContent = t;
+  },1000);
+}
+
+function startStudy(){
+  document.getElementById('start-screen').style.display = 'none';
+  document.getElementById('main-header').style.display  = 'block';
+  document.getElementById('main-body').style.display    = 'block';
+  document.getElementById('float-pause-btn').style.display = 'flex';
+  // 外部JSが確実にロードされてから題目を初期化
+  try { LISTEN_QS  = getTodayListenQs(); } catch(e){ console.error(e); }
+  try { GRAMMAR_QS = getTodayGrammarQs(); } catch(e){ console.error(e); }
+  try { READ_QS    = getTodayReadQs(); } catch(e){ console.error(e); }
+  // 题目渲染（必须在 LISTEN_QS 等初始化之后）
+  try { buildListenQs(); } catch(e){ console.error('聴解エラー',e); }
+  try { buildGrammarQs(); } catch(e){ console.error('語法エラー',e); }
+  try { buildReadQs(); } catch(e){ console.error('読解エラー',e); }
+  // 根据学生配置隐藏不需要的模块
+  if(NO_READ){
+    document.getElementById('card-read').style.display = 'none';
+  }
+  VOCAB = getTodayVocab();
+  startTimer();
+  initVocabDots();
+  fillVocab();
+}
+
+function pauseStudy(){
+  isPaused = true;
+  clearInterval(timerInterval);
+  document.getElementById('float-pause-btn').style.display = 'none';
+  document.getElementById('pause-big-time').textContent = formatTime(elapsed);
+  document.getElementById('pause-overlay').classList.add('show');
+}
+
+function resumeStudy(){
+  isPaused = false;
+  document.getElementById('pause-overlay').classList.remove('show');
+  document.getElementById('float-pause-btn').style.display = 'flex';
+  startTimer();
+}
+
+// ── 進捗 ──────────────────────────────────────────────
+const sectionDone = {vocab:false,listen:false,grammar:false,read:false,note:false};
+// NO_READ学生跳过阅读（需要在sectionDone定义后立刻设置）
+if(NO_READ) sectionDone.read = true;
+function updateProgress(){
+  const done = Object.values(sectionDone).filter(Boolean).length;
+  const pct  = Math.round(done/5*100);
+  document.getElementById('prog-fill').style.width = pct+'%';
+  document.getElementById('prog-txt').textContent  = done+' / 5 完了';
+  document.getElementById('hd-prog').textContent   = pct+'%';
+  const btn = document.getElementById('submit-btn');
+  const lbl = document.getElementById('submit-lbl');
+  if(done===5){ btn.disabled=false; lbl.textContent='今日の打卡を送信する'; }
+  else{ btn.disabled=true; lbl.textContent='タスクを完了してから送信 ('+done+'/5)'; }
+}
+function markDone(section){
+  if(sectionDone[section]) return;
+  sectionDone[section]=true;
+  document.getElementById('chk-'+section).classList.add('done');
+  updateProgress();
+}
+function toggleTask(id){
+  const el = document.getElementById('body-'+id);
+  if(el) el.classList.toggle('open');
+}
+
+// ── 語彙 bank 合并（bank01–11，以后新增 bank 在此追加）──
+function getAllVocab(){
+  const banks = [
+    typeof BANK01!=='undefined'?BANK01:[],
+    typeof BANK02!=='undefined'?BANK02:[],
+    typeof BANK03!=='undefined'?BANK03:[],
+    typeof BANK04!=='undefined'?BANK04:[],
+    typeof BANK05!=='undefined'?BANK05:[],
+    typeof BANK06!=='undefined'?BANK06:[],
+    typeof BANK07!=='undefined'?BANK07:[],
+    typeof BANK08!=='undefined'?BANK08:[],
+    typeof BANK09!=='undefined'?BANK09:[],
+    typeof BANK10!=='undefined'?BANK10:[],
+    typeof BANK11!=='undefined'?BANK11:[],
+  ];
+  // 合并并统一字段（bank 用 kanji/kana/chn，内部用 jp/rd/cn）
+  return banks.flat().map(v=>({
+    id:   v.id,
+    jp:   v.kanji || v.jp || '',
+    rd:   v.kana  || v.rd || '',
+    cn:   v.chn   || v.cn || '',
+    audio:v.audio || (v.id+'.mp3'),
+  }));
+}
+
+function getTodayVocab(){
+  function seededShuffle(arr, seed){
+    const a = [...arr];
+    let s = seed;
+    for(let i = a.length - 1; i > 0; i--){
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      const j = Math.abs(s) % (i + 1);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  const allVocab = getAllVocab();
+  const correctCount = storedData.correctCount || {};
+  const weakIds      = new Set(storedData.weakWords || []);
+
+  // 答对3次的词从词库移除
+  const active = allVocab.filter(v => (correctCount[v.id] || 0) < 3);
+
+  // 薄弱词（模糊/没印象）优先
+  const weak   = active.filter(v =>  weakIds.has(v.id));
+  const normal = active.filter(v => !weakIds.has(v.id));
+
+  const shuffledWeak   = seededShuffle(weak,   SESSION_NUM * 3571);
+  const shuffledNormal = seededShuffle(normal, SESSION_NUM * 7919);
+
+  // 不重复，有多少出多少（最多50个）
+  const base = [...shuffledWeak, ...shuffledNormal];
+  return base.slice(0, 50);
+}
+let VOCAB=[];
+let vIdx=0, vResults=[], vAudio=null, vFlipped=false;
+const AUDIO_BASE='https://bjt.nice.okinawa/audio/voca/';
+
+function initVocabDots(){
+  const n = VOCAB.length;
+  document.getElementById('vdots').innerHTML=
+    Array.from({length:n},(_,i)=>`<div class="vdot${i===0?' cur':''}" id="vd${i}"></div>`).join('');
+}
+
+function fillVocab(){
+  const total = VOCAB.length;
+  if(vIdx>=total){
+    markDone('vocab');
+    document.getElementById('vocab-meta').textContent='完了！秒懂:'+vResults.filter(r=>r===0).length+' / '+total;
+    document.getElementById('vcard').style.display='none';
+    document.getElementById('vdots').style.display='none';
+    document.getElementById('vcnt').textContent=total+' / '+total+' 完了';
+    document.querySelectorAll('.pbtn').forEach(b=>b.disabled=true);
+    return;
+  }
+  // 重置卡片状态
+  vFlipped = false;
+  document.getElementById('vreveal').innerHTML = '';
+  document.getElementById('vcard').style.cursor = 'pointer';
+  document.getElementById('vcard').onclick = flipVocabCard;
+  document.getElementById('vflip-hint').style.display = 'block';
+  // 按钮立刻可用
+  document.querySelectorAll('.pbtn').forEach(b=>b.disabled=false);
+  document.getElementById('vcnt').textContent=(vIdx+1)+' / '+total;
+  document.querySelectorAll('.vdot').forEach((d,i)=>{
+    d.className='vdot'+(i===vIdx?' cur':vResults[i]!==undefined?' s'+vResults[i]:'');
+  });
+  stopVocabAudio();
+}
+
+function flipVocabCard(){
+  if(vFlipped) return;
+  vFlipped = true;
+  const v = VOCAB[vIdx];
+  document.getElementById('vreveal').innerHTML =
+    `<div class="jp">${v.jp}</div><div class="cn">${v.cn}</div>`;
+  document.getElementById('vflip-hint').style.display = 'none';
+  document.getElementById('vcard').style.cursor = 'default';
+  document.getElementById('vcard').onclick = null;
+}
+
+function playVocab(){
+  if(vIdx>=VOCAB.length) return;
+  stopVocabAudio();
+  const v=VOCAB[vIdx];
+  if(!v || !v.id) return;
+  vAudio=new Audio(AUDIO_BASE+v.id+'.mp3');
+  vAudio.onplay=()=>{ setVplaying(true); };
+  vAudio.onended=()=>{ setVplaying(false); };
+  vAudio.onerror=()=>{ setVplaying(false); };
+  vAudio.play().catch(()=>{ setVplaying(false); });
+}
+
+function setVplaying(on){
+  document.getElementById('vplay').classList.toggle('playing',on);
+  document.getElementById('vwave').classList.toggle('playing-wave',on);
+  document.getElementById('vplay-icon').className=on?'ti ti-player-pause':'ti ti-volume';
+}
+
+function stopVocabAudio(){
+  if(vAudio){vAudio.pause();vAudio=null;}
+  setVplaying(false);
+}
+
+function answerVocab(score){
+  vResults[vIdx]=score;
+  // 答"秒懂"时累计正确次数
+  if(score===0){
+    const vid = VOCAB[vIdx].id;
+    if(!storedData.correctCount) storedData.correctCount={};
+    storedData.correctCount[vid] = (storedData.correctCount[vid]||0) + 1;
+  }
+  stopVocabAudio();
+  const vc=document.getElementById('vcard');
+  vc.classList.add(score===0?'out-r':'out-l');
+  vIdx++;
+  setTimeout(()=>{vc.classList.remove('out-r','out-l');fillVocab();},150);
+}
+
+// ── 音声・画像ベースパス ─────────────────────────────
+const MOGI_AUDIO = 'https://bjt.nice.okinawa/mogi/trial/audio/';
+const MOGI_IMG   = 'https://bjt.nice.okinawa/mogi/trial/img/';
+
+// ── ランダム抽出ユーティリティ ────────────────────────
+function shuffle(arr){ return [...arr].sort(()=>Math.random()-.5); }
+function pick(arr,n){ return shuffle(arr).slice(0,Math.min(n,arr.length)); }
+
+// 聴解20問：已做過的排後，fresh優先
+function getTodayListenQs(){
+  const pool=[...BANK_A,...BANK_B,...BANK_C,...BANK_D,...BANK_E,...BANK_F];
+  function seededShuffle(arr, seed){
+    const a = [...arr];
+    let s = seed;
+    for(let i = a.length - 1; i > 0; i--){
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      const j = Math.abs(s) % (i + 1);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  const doneListen    = new Set(storedData.doneListen || []);
+  const correctCount  = storedData.correctCount || {};
+  // 答对3次的题过滤掉
+  const active = pool.filter(q => (correctCount[q.num] || 0) < 3);
+  const fresh  = active.filter(q => !doneListen.has(q.num));
+  const done   = active.filter(q =>  doneListen.has(q.num));
+  const result = [...seededShuffle(fresh, SESSION_NUM * 6131),
+                  ...seededShuffle(done,  SESSION_NUM * 3079)];
+  return result.slice(0, 20);
+}
+// 語法40問：seeded shuffle + 已做過的優先排後（G20+H20）
+function getTodayGrammarQs(){
+  function normalizeAns(q){
+    const a = q.ans !== undefined ? q.ans : (q.correct !== undefined ? q.correct-1 : 0);
+    return {num:q.num, text:q.text, opts:q.opts, ans:a};
+  }
+  function seededShuffle(arr, seed){
+    const a = [...arr];
+    let s = seed;
+    for(let i = a.length - 1; i > 0; i--){
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      const j = Math.abs(s) % (i + 1);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function pickFresh(bank, n, doneSet){
+    const correctCount = storedData.correctCount || {};
+    const active = bank.filter(q => (correctCount[q.num] || 0) < 3);
+    const fresh = active.filter(q => !doneSet.has(q.num));
+    const done  = active.filter(q =>  doneSet.has(q.num));
+    const pool  = [...seededShuffle(fresh, SESSION_NUM * 4337),
+                   ...seededShuffle(done,  SESSION_NUM * 2111)];
+    return pool.slice(0, n).map(normalizeAns);
+  }
+  const doneGrammar = new Set(storedData.doneGrammar || []);
+  const gItems = pickFresh(BANK_G, 20, doneGrammar);
+  const hItems = pickFresh(BANK_H, 20, doneGrammar);
+  return [...gItems,...hItems];
+}
+// 今日の読解3問：I からランダム
+function getTodayReadQs(){
+  function seededShuffle(arr, seed){
+    const a = [...arr];
+    let s = seed;
+    for(let i = a.length - 1; i > 0; i--){
+      s = (s * 1664525 + 1013904223) & 0xffffffff;
+      const j = Math.abs(s) % (i + 1);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  const correctCount  = storedData.correctCount || {};
+  const doneRead = new Set(storedData.doneRead || []);
+  const active = BANK_I.filter(q => (correctCount[q.num] || 0) < 3);
+  const fresh = active.filter(q => !doneRead.has(q.num));
+  const done  = active.filter(q =>  doneRead.has(q.num));
+  const pool  = [...seededShuffle(fresh, SESSION_NUM * 5039),
+                 ...seededShuffle(done,  SESSION_NUM * 1777)];
+  return pool.slice(0, 5).map(q=>{
+    const a = q.ans !== undefined ? q.ans : (q.correct !== undefined ? q.correct-1 : 0);
+    return {num:q.num, text:q.text, passage:q.passage||'', opts:q.opts, ans:a};
+  });
+}
+
+let LISTEN_QS  = [];
+let GRAMMAR_QS = [];
+let READ_QS    = [];
+
+// ── 题目ビルダー ──────────────────────────────────────
+function buildListenQs(){
+  const c=document.getElementById('listen-qs');
+  c.innerHTML=LISTEN_QS.map((q,qi)=>{
+    const hasOpts = q.opts && q.opts.length>0;
+    const opts = hasOpts ? q.opts : ['1','2','3','4'];
+    const ans0 = q.correct - 1; // correct は1始まり
+    return `<div class="q-item">
+      <div class="q-num">🎧 問${qi+1}　<span style="font-size:10px;color:#aaa">${q.cat}</span></div>
+      <div class="q-audio">
+        <button class="qa-btn" onclick="playListenQ(${qi})" id="lqa-${qi}">
+          <i class="ti ti-player-play" id="lqa-icon-${qi}"></i>
+        </button>
+        <div class="qa-info">
+          <div class="qa-title">${q.num}</div>
+          <div class="qa-sub">タップして再生（何度でも可）</div>
+        </div>
+      </div>
+${q.img?`<img src="https://bjt.nice.okinawa${q.img}" style="width:100%;border-radius:8px;margin-bottom:8px" onerror="this.style.display='none'">`:''}
+      <div class="opts">${opts.map((o,oi)=>`<button class="opt" id="listen-${qi}-${oi}" onclick="answerListen(${qi},${oi},${ans0})">${o}</button>`).join('')}</div>
+      <div class="q-exp" id="listen-exp-${qi}">正解：${opts[ans0]}</div>
+    </div>`;
+  }).join('');
+}
+
+function buildGrammarQs(){
+  const c=document.getElementById('grammar-qs');
+  c.innerHTML=GRAMMAR_QS.map((q,qi)=>`
+    <div class="q-item">
+      <div class="q-num">✏️ 問${qi+1}</div>
+      <div class="q-text" style="white-space:pre-line">${q.text}</div>
+      <div class="opts">${q.opts.map((o,oi)=>`<button class="opt" id="grammar-${qi}-${oi}" onclick="answerSimple('grammar',${qi},${oi},${q.ans})">${o}</button>`).join('')}</div>
+      <div class="q-exp" id="grammar-exp-${qi}">正解：${q.opts[q.ans]}</div>
+    </div>`).join('');
+}
+
+function buildReadQs(){
+  const c=document.getElementById('read-qs');
+  c.innerHTML=READ_QS.map((q,qi)=>`
+    <div class="q-item">
+      <div class="q-num">📄 問${qi+1}</div>
+      <div class="q-text">${q.text}</div>
+      <div style="background:var(--bg2);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.7;white-space:pre-line;margin-bottom:8px;color:var(--text2)">${q.passage}</div>
+      <div class="opts">${q.opts.map((o,oi)=>`<button class="opt" id="read-${qi}-${oi}" onclick="answerSimple('read',${qi},${oi},${q.ans})">${o}</button>`).join('')}</div>
+      <div class="q-exp" id="read-exp-${qi}">正解：${q.opts[q.ans]}</div>
+    </div>`).join('');
+}
+
+// ── 音声再生 ──────────────────────────────────────────
+let listenAudios={};
+function playListenQ(qi){
+  Object.values(listenAudios).forEach(a=>{a.pause();});
+  const q=LISTEN_QS[qi];
+  const audio=new Audio(q.audio);
+  listenAudios[qi]=audio;
+  const icon=document.getElementById(`lqa-icon-${qi}`);
+  audio.onplay=()=>icon.className='ti ti-player-pause';
+  audio.onended=()=>icon.className='ti ti-player-play';
+  audio.play().catch(()=>icon.className='ti ti-player-play');
+}
+
+// ── 回答処理 ──────────────────────────────────────────
+const qAnswers={listen:[],grammar:[],read:[]};
+const qScores={listen:0,grammar:0,read:0};
+
+function answerListen(qi,oi,ans){
+  if(qAnswers.listen[qi]!==undefined)return;
+  qAnswers.listen[qi]=oi;
+  const ok=oi===ans;
+  if(ok){
+    qScores.listen++;
+    const qnum = LISTEN_QS[qi].num;
+    if(!storedData.correctCount) storedData.correctCount={};
+    storedData.correctCount[qnum] = (storedData.correctCount[qnum]||0) + 1;
+  }
+  for(let i=0;i<4;i++){
+    const b=document.getElementById(`listen-${qi}-${i}`);
+    if(!b)continue;
+    b.disabled=true;
+    if(i===ans)b.classList.add('correct');
+    else if(i===oi&&!ok)b.classList.add('wrong');
+  }
+  document.getElementById(`listen-exp-${qi}`).classList.add('show');
+  if(qAnswers.listen.filter(a=>a!==undefined).length===LISTEN_QS.length) markDone('listen');
+}
+
+function answerSimple(type,qi,oi,ans){
+  const arr=qAnswers[type];
+  if(arr[qi]!==undefined)return;
+  arr[qi]=oi;
+  const ok=oi===ans;
+  if(ok){
+    qScores[type]++;
+    const qs = type==='grammar' ? GRAMMAR_QS : READ_QS;
+    const qnum = qs[qi] && qs[qi].num;
+    if(qnum){
+      if(!storedData.correctCount) storedData.correctCount={};
+      storedData.correctCount[qnum] = (storedData.correctCount[qnum]||0) + 1;
+    }
+  }
+  const total=type==='grammar'?GRAMMAR_QS.length:READ_QS.length;
+  for(let i=0;i<4;i++){
+    const b=document.getElementById(`${type}-${qi}-${i}`);
+    if(!b)continue;
+    b.disabled=true;
+    if(i===ans)b.classList.add('correct');
+    else if(i===oi&&!ok)b.classList.add('wrong');
+  }
+  document.getElementById(`${type}-exp-${qi}`).classList.add('show');
+  if(arr.filter(a=>a!==undefined).length===total) markDone(type);
+}
+
+// ── 笔记 ──────────────────────────────────────────────
+function markNotesDone(){
+  markDone('note');
+}
+
+// ── 提交 ──────────────────────────────────────────────
+async function submitAll(){
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;
+  document.getElementById('submit-lbl').textContent='保存中...';
+  clearInterval(timerInterval);
+  const duration=formatTime(elapsed);
+  const vocabScore=vResults.filter(r=>r===0).length;
+  const weakIds = VOCAB.filter((_,i)=>vResults[i]>0).map(v=>v.id);
+  const doneListenNums  = LISTEN_QS.map(q=>q.num);
+  const doneGrammarNums = GRAMMAR_QS.map(q=>q.num).filter(Boolean);
+  const doneReadNums    = READ_QS.map(q=>q.num).filter(Boolean);
+  const weakListenNums  = LISTEN_QS.filter((_,i)=>qAnswers.listen[i]!==undefined && qAnswers.listen[i]!==(LISTEN_QS[i].correct-1)).map(q=>q.num);
+  const weakGrammarNums = GRAMMAR_QS.filter((_,i)=>qAnswers.grammar[i]!==undefined && qAnswers.grammar[i]!==GRAMMAR_QS[i].ans).map(q=>q.num);
+  const weakReadNums    = READ_QS.filter((_,i)=>qAnswers.read[i]!==undefined && qAnswers.read[i]!==READ_QS[i].ans).map(q=>q.num);
+  const sessionDetail = {
+    date: new Date().toISOString(),
+    duration: elapsed,
+    vocab:   { score: vocabScore, total: VOCAB.length },
+    listen:  { score: qScores.listen,  total: LISTEN_QS.length,  wrong: weakListenNums },
+    grammar: { score: qScores.grammar, total: GRAMMAR_QS.length, wrong: weakGrammarNums },
+    read:    { score: qScores.read,    total: READ_QS.length,    wrong: weakReadNums },
+  };
+  try {
+    await incrementSession(weakIds, doneListenNums, doneGrammarNums, doneReadNums, sessionDetail);
+    document.querySelectorAll('.task-card').forEach(c=>c.style.display='none');
+    document.querySelector('.submit-area').style.display='none';
+    const d=document.getElementById('done-card');
+    d.style.display='block';
+    document.getElementById('done-time').textContent=duration;
+    document.getElementById('ds-vocab').textContent=vocabScore+'/100';
+    document.getElementById('ds-listen').textContent=qScores.listen+'/20';
+    document.getElementById('ds-grammar').textContent=qScores.grammar+'/40';
+    document.getElementById('ds-read').textContent=qScores.read+'/5';
+  } catch(err){
+    console.error(err);
+    document.getElementById('submit-lbl').textContent='保存に失敗しました。もう一度お試しください。';
+    btn.disabled=false;
+  }
+}
+
+// ── 管理者モード ──────────────────────────────────────
+const isAdmin = urlParams.get('t') === '1';
+
+if(isAdmin){
+  document.getElementById('start-screen').style.display='none';
+  document.getElementById('admin-screen').style.display='block';
+  document.getElementById('adm-code-lbl').textContent = code || '(不明)';
+  fetchStoredData().then(data=>{
+    storedData  = data;
+    SESSION_NUM = data.count || 1;
+    DAYS_LEFT   = calcDaysLeft();
+    document.getElementById('admin-title').textContent = STUDENT + 'さん';
+    document.getElementById('admin-sub').textContent   = code + '　試験日: ' + formatDateDisplay(EXAM);
+    document.getElementById('adm-sessions').textContent  = (data.count || 1) - 1;
+    document.getElementById('adm-days-left').textContent = DAYS_LEFT > 0 ? DAYS_LEFT + '日' : '試験終了';
+    document.getElementById('adm-weak').textContent      = (data.weakWords || []).length;
+    renderExamScores();
+    renderHistory();
+  });
+}
+
+function formatDateDisplay(s){
+  if(!s||s.length<8) return s||'';
+  return s.slice(0,4)+'/'+ s.slice(4,6)+'/'+ s.slice(6,8);
+}
+
+function renderExamScores(){
+  const scores = storedData.examScores || [];
+  const list   = document.getElementById('score-list');
+  if(!scores.length){ list.innerHTML='<div style="font-size:13px;color:#bbb;text-align:center;padding:8px 0">まだ成績がありません</div>'; return; }
+  list.innerHTML = scores.map((s,i)=>`
+    <div class="score-item">
+      <div>
+        <div class="score-item-date">${s.date || '—'}</div>
+        <div style="font-size:11px;color:#bbb">打卡 ${(storedData.count||1)-1} 回時点</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="score-item-val">${s.score} <span style="font-size:12px;color:var(--text2)">点</span></div>
+        <button class="score-del" onclick="deleteScore(${i})" title="削除"><i class="ti ti-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+
+function renderHistory(){
+  const history = storedData.history || [];
+  const list    = document.getElementById('history-list');
+  if(!history.length){ list.innerHTML='<div style="font-size:13px;color:#bbb;text-align:center;padding:8px 0">履歴がありません</div>'; return; }
+  const rows = [...history].reverse().map((h,i)=>{
+    const d   = new Date(h.date);
+    const ds  = d.toLocaleDateString('ja-JP',{month:'numeric',day:'numeric'}) + ' ' + d.toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});
+    const dur = formatTime(h.duration||0);
+    return `<div class="history-item">
+      <div>
+        <div class="history-date">${ds}</div>
+        <div class="history-scores">語彙 ${h.vocab?.score??'—'}/${h.vocab?.total??'—'} 　聴解 ${h.listen?.score??'—'}/${h.listen?.total??'—'} 　語法 ${h.grammar?.score??'—'}/${h.grammar?.total??'—'}</div>
+      </div>
+      <div class="history-dur">${dur}</div>
+    </div>`;
+  });
+  list.innerHTML = rows.join('');
+}
+
+async function saveExamScore(){
+  const dateVal  = document.getElementById('score-date').value;
+  const scoreVal = parseInt(document.getElementById('score-val').value);
+  if(!dateVal || isNaN(scoreVal) || scoreVal < 0 || scoreVal > 800){
+    alert('日付と有効なスコア（0〜800）を入力してください');
+    return;
+  }
+  if(!storedData.examScores) storedData.examScores = [];
+  storedData.examScores.push({
+    date: dateVal,
+    score: scoreVal,
+    sessions: (storedData.count||1)-1,
+    recordedAt: new Date().toISOString()
+  });
+  await saveStoredData(storedData);
+  document.getElementById('score-date').value = '';
+  document.getElementById('score-val').value  = '';
+  renderExamScores();
+}
+
+async function deleteScore(idx){
+  if(!confirm('この成績を削除しますか？')) return;
+  storedData.examScores.splice(idx,1);
+  await saveStoredData(storedData);
+  renderExamScores();
+}
+
+async function deleteAccount(){
+  if(!confirm('本当にこのアカウントのすべてのデータを削除しますか？\nこの操作は取り消せません。')) return;
+  if(!confirm('最終確認：「' + (STUDENT||code) + '」のデータをすべて削除します。よろしいですか？')) return;
+  try {
+    const res = await fetch(API_BASE + '/progress?c=' + encodeURIComponent(code), { method: 'DELETE' });
+    if(res.ok){
+      alert('アカウントを削除しました。');
+      document.getElementById('admin-screen').innerHTML =
+        '<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:16px;color:#888;">削除完了</div>';
+    } else {
+      alert('削除に失敗しました（サーバーエラー）。Worker側でDELETEエンドポイントが必要です。');
+    }
+  } catch(e){
+    alert('削除に失敗しました: ' + e.message);
+  }
+}
+
+
+updateProgress();
+</script>
+</body>
+</html>
